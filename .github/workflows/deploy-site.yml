@@ -1,4 +1,4 @@
-name: deploy guides
+name: deploy guides.18f.org
 
 on:
   repository_dispatch:
@@ -11,29 +11,10 @@ permissions:
   id-token: write
 
 jobs:
-  build:
-    name: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-        id: checkout
-        with:
-          repository: team18f/guides
-          ref: ${{ inputs.branch }}
-          token: ${{ secrets.CLONE_PAT }}
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 22
-      - name: build site
-        run: |
-          npm ci
-          npm run build
-
-      - name: upload artifacts to Pages
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./_site
-
-      - name: deploy Pages
-        uses: actions/deploy-pages@v4
+  deploy:
+    name: deploy
+    uses: team18f/site/.github/workflows/deploy.yaml@main
+    with:
+      repo: team18f/guides
+    secrets:
+      token: ${{ secrets.CLONE_PAT }}
