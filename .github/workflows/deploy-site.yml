@@ -1,0 +1,51 @@
+name: deploy guides
+
+on:
+  repository_dispatch:
+    types: [trigger-workflow]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    name: build
+    runs-on: unbuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        id: checkout
+        with:
+          repository: team18f/guides
+          ref: ${{ inputs.branch }}
+          token: ${{ secrets.CLONE_PAT }}
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 22
+      - name: build site
+        run: |
+          npm ci
+          npm run build
+
+  deploy:
+    name: deploy
+    needs: [build]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: guides-site
+          path: _site
+
+      - name: upload artifacts to Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./_site
+
+      - name: deploy Pages
+        uses: actions/deploy-pages@v4
